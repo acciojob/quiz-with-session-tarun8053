@@ -1,81 +1,79 @@
-//your JS code here.
+window.onload = function () {
 
-// Load saved progress
-let savedProgress = sessionStorage.getItem("progress");
-let userAnswers = savedProgress ? JSON.parse(savedProgress) : {};
+  // Load saved progress if available
+  let savedProgress = sessionStorage.getItem("progress");
+  let userAnswers = savedProgress ? JSON.parse(savedProgress) : {};
 
-const questionsElement = document.getElementById("questions");
-const submitBtn = document.getElementById("submit");
-const scoreElement = document.getElementById("score");
+  const questionsElement = document.getElementById("questions");
+  const submitBtn = document.getElementById("submit");
+  const scoreElement = document.getElementById("score");
 
-// If score exists in localStorage, show it
-const storedScore = localStorage.getItem("score");
-if (storedScore !== null) {
-  scoreElement.textContent = `Your score is ${storedScore} out of 5.`;
-}
+  // Show stored score from localStorage (if any)
+  const storedScore = localStorage.getItem("score");
+  if (storedScore !== null) {
+    scoreElement.textContent = `Your score is ${storedScore} out of 5.`;
+  }
 
-// Save progress when user selects an option
-function saveProgress(qIndex, answer) {
-  userAnswers[qIndex] = answer;
-  sessionStorage.setItem("progress", JSON.stringify(userAnswers));
-}
+  // Save user's selected answer
+  function saveProgress(qIndex, answer) {
+    userAnswers[qIndex] = answer;
+    sessionStorage.setItem("progress", JSON.stringify(userAnswers));
+  }
 
-// Display the quiz questions and choices
-function renderQuestions() {
-  for (let i = 0; i < questions.length; i++) {
-    const question = questions[i];
-    const questionElement = document.createElement("div");
-    const questionText = document.createTextNode(question.question);
-    questionElement.appendChild(questionText);
+  // Render questions
+  function renderQuestions() {
+    for (let i = 0; i < questions.length; i++) {
+      const question = questions[i];
+      const questionElement = document.createElement("div");
+      const questionText = document.createTextNode(question.question);
+      questionElement.appendChild(questionText);
 
-    for (let j = 0; j < question.choices.length; j++) {
-      const choice = question.choices[j];
-      const choiceElement = document.createElement("input");
-      choiceElement.setAttribute("type", "radio");
-      choiceElement.setAttribute("name", `question-${i}`);
-      choiceElement.setAttribute("value", choice);
+      for (let j = 0; j < question.choices.length; j++) {
+        const choice = question.choices[j];
 
-      // restore saved answer
-      if (userAnswers[i] === choice) {
-        choiceElement.checked = true;
+        const choiceElement = document.createElement("input");
+        choiceElement.type = "radio";
+        choiceElement.name = `question-${i}`;
+        choiceElement.value = choice;
+
+        if (userAnswers[i] === choice) {
+          choiceElement.checked = true;
+        }
+
+        // Save progress when selected
+        choiceElement.addEventListener("change", () => {
+          saveProgress(i, choice);
+        });
+
+        const choiceText = document.createTextNode(choice);
+        questionElement.appendChild(choiceElement);
+        questionElement.appendChild(choiceText);
       }
 
-      // save answer when picked
-      choiceElement.addEventListener("change", () => {
-        saveProgress(i, choice);
-      });
-
-      const choiceText = document.createTextNode(choice);
-      questionElement.appendChild(choiceElement);
-      questionElement.appendChild(choiceText);
-    }
-
-    questionsElement.appendChild(questionElement);
-  }
-}
-
-renderQuestions();
-
-// Submit button
-submitBtn.addEventListener("click", () => {
-  let score = 0;
-
-  for (let i = 0; i < questions.length; i++) {
-    if (userAnswers[i] === questions[i].answer) {
-      score++;
+      questionsElement.appendChild(questionElement);
     }
   }
 
-  // Display score
-  scoreElement.textContent = `Your score is ${score} out of 5.`;
+  renderQuestions();
 
-  // Save score to localStorage
-  localStorage.setItem("score", score.toString());
-});
+  // Submit
+  submitBtn.addEventListener("click", () => {
+    let score = 0;
+
+    for (let i = 0; i < questions.length; i++) {
+      if (userAnswers[i] === questions[i].answer) {
+        score++;
+      }
+    }
+
+    scoreElement.textContent = `Your score is ${score} out of 5.`;
+    localStorage.setItem("score", score);
+  });
+
+};
 
 
-// Do not change code below this line
-// This code will just display the questions to the screen
+// DO NOT MODIFY — PROVIDED QUESTIONS
 const questions = [
   {
     question: "What is the capital of France?",
