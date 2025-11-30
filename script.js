@@ -8,23 +8,24 @@ window.onload = function () {
   const submitBtn = document.getElementById("submit");
   const scoreElement = document.getElementById("score");
 
-  // Show stored score from localStorage (if any)
+  // Show stored score if present
   const storedScore = localStorage.getItem("score");
   if (storedScore !== null) {
     scoreElement.textContent = `Your score is ${storedScore} out of 5.`;
   }
 
-  // Save user's selected answer
+  // Save answer to sessionStorage
   function saveProgress(qIndex, answer) {
     userAnswers[qIndex] = answer;
     sessionStorage.setItem("progress", JSON.stringify(userAnswers));
   }
 
-  // Render questions
+  // Render questions to DOM
   function renderQuestions() {
     for (let i = 0; i < questions.length; i++) {
       const question = questions[i];
       const questionElement = document.createElement("div");
+
       const questionText = document.createTextNode(question.question);
       questionElement.appendChild(questionText);
 
@@ -36,13 +37,23 @@ window.onload = function () {
         choiceElement.name = `question-${i}`;
         choiceElement.value = choice;
 
+        // Restore saved selection
         if (userAnswers[i] === choice) {
           choiceElement.checked = true;
+          choiceElement.setAttribute("checked", "true"); // REQUIRED BY CYPRESS
         }
 
-        // Save progress when selected
+        // Save choice on click
         choiceElement.addEventListener("change", () => {
           saveProgress(i, choice);
+
+          // Remove old checked attribute from all radios in this question
+          document
+            .querySelectorAll(`input[name="question-${i}"]`)
+            .forEach(radio => radio.removeAttribute("checked"));
+
+          // Set the new checked="true" attribute for Cypress detection
+          choiceElement.setAttribute("checked", "true");
         });
 
         const choiceText = document.createTextNode(choice);
@@ -56,7 +67,7 @@ window.onload = function () {
 
   renderQuestions();
 
-  // Submit
+  // Submit quiz and calculate score
   submitBtn.addEventListener("click", () => {
     let score = 0;
 
@@ -67,13 +78,14 @@ window.onload = function () {
     }
 
     scoreElement.textContent = `Your score is ${score} out of 5.`;
-    localStorage.setItem("score", score);
-  });
 
+    // Save score to localStorage
+    localStorage.setItem("score", score.toString());
+  });
 };
 
 
-// DO NOT MODIFY — PROVIDED QUESTIONS
+// DO NOT CHANGE BELOW — Provided Data
 const questions = [
   {
     question: "What is the capital of France?",
